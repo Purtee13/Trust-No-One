@@ -59,8 +59,17 @@ test('four players complete a game with private roles, locked votes and guarded 
   await call(`${root}/generate-oracle`, {}, host);
   assert.equal(requests[0].context.saboteurId, undefined);
   assert.equal(requests[0].context.players.some(p => 'role' in p || 'token' in p), false);
-  await call(`${root}/generate-shadow`, {}, host);
+  await call(`${root}/generate-shadow`, {}, host, 403);
+  for (const p of players.filter(p => p.playerId !== saboteur)) {
+    await call(`${root}/generate-shadow`, {}, p.playerToken, 403);
+  }
+  const saboteurSession = players.find(p => p.playerId === saboteur);
+  await call(`${root}/generate-shadow`, {}, saboteurSession.playerToken);
   assert.equal(requests[1].context.saboteurId, saboteur);
+  for (const p of players) {
+    const view = await call(root, undefined, p.playerToken);
+    assert.equal(view.me.shadowAdvice, p.playerId === saboteur ? 'Question the report.' : null);
+  }
   await call(`${root}/answer`, { answer: 'overwrite' }, first.playerToken, 409);
   await call(`${root}/oracle`, { suspect: saboteur, interrogate: first.playerId, confidence: 81,
     reason: 'Conflicting evidence', question: 'Explain your choice.' }, host);

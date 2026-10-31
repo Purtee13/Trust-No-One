@@ -64,7 +64,7 @@ Save `GOOGLE_API_KEY=your_key` in the root `.env`, then run `npm run backend`. T
 
 To use your downloaded model instead, explicitly set `GEMMA_PROVIDER=ollama` in `.env` and run Ollama with `gemma4:e4b`. There is no automatic fallback to Ollama when a Google request fails. See `.env.example`.
 
-The trusted host integration can POST `{}` with the host bearer token to:
+Generation uses the host token for Oracle and Oracle voting, and the Saboteur’s player token for Shadow. POST `{}` to:
 
 | Endpoint suffix | When | Effect |
 | --- | --- | --- |
@@ -88,7 +88,7 @@ The adapter uses Ollama's [chat API](https://docs.ollama.com/api/chat) and [JSON
 4. Open `http://localhost:3000` in four independent tabs (open fresh tabs directly; duplicating a tab can copy its session storage). Enter different names. Create one room and join its six-character code in the other three tabs.
 5. On the creator's screen, click **Launch Mission**. Each tab must show its own private role/evidence; exactly one shows Saboteur. The Security Officer should see the image.
 6. After everyone reads their evidence, the host clicks **Begin discussion**. Submit one argument in each tab. All four public statements should appear everywhere.
-7. Host may click **Update Shadow advice**. Wait for it to finish; only the Saboteur should see the tip. This currently uses local Gemma; Maritime remains for Person 4.
+7. The Saboteur may click **Ask Shadow** in their private panel. Wait for it to finish; only the Saboteur sees the tip. This uses your configured Gemma provider; Maritime remains for Person 4.
 8. With all four arguments submitted, host clicks **Run Oracle + interrogate**. Allow up to three minutes for a cold model load. Every screen moves to interrogation; only the selected player can submit a response.
 9. After that response, host clicks **Open voting**. Every player chooses a suspect and pod, then locks the vote. Each player sees only their own locked vote.
 10. Once all votes are in, host clicks **Oracle vote + reveal**. Gemma chooses its final suspect; all screens move to the animated reveal with server-calculated human and AI results.
@@ -112,3 +112,7 @@ Each player, including the host, clicks **I'm ready** in the lobby. The player l
 ## Fair evidence assignment
 
 At launch, all four legitimate clues are shuffled independently of the secret Saboteur draw. The Saboteur can receive any clue, including the security image or Pod D report. The fourth clue is a legitimate navigation report about Pod A, not a Saboteur-only outdated manifest. Oracle receives evidence and statements without secret roles or objectives; the evidence card itself cannot identify the Saboteur. Start a new game to use this assignment; existing games retain their dealt evidence.
+
+## Private Shadow requests
+
+Only the Saboteur sees **Ask Shadow** in discussion, interrogation, and voting (including after locking their vote). `POST /api/rooms/:code/generate-shadow` requires the Saboteur's **player token**. A host token or any other player's token receives HTTP 403. Advice is included only in the Saboteur's personalized room snapshot; neither Oracle context nor other players receive it. Host controls no longer contain a Shadow button. The trusted server integration may still write agent advice through `/shadow`, but this does not grant read or generation access.

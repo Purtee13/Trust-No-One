@@ -24,7 +24,14 @@ await control('advance');
 for (const p of players) await call(`${root}/answer`, { answer: 'Pod D has all systems online. Pod B has hull damage.' }, p.playerToken);
 console.log('Four real sessions joined through frontend proxy. Asking Gemma…');
 await control('generate-oracle');
-await control('generate-shadow');
+const saboteur = players.find(p => p.playerId === rooms.find(r => r.me.role === 'saboteur').me.id);
+const denied = await fetch(base + root + '/generate-shadow', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${host.hostToken}` }, body: '{}' });
+assert.equal(denied.status, 403);
+await call(`${root}/generate-shadow`, {}, saboteur.playerToken);
+for (const p of players) {
+  const view = await call(root, undefined, p.playerToken);
+  assert.equal(Boolean(view.me.shadowAdvice), p.playerId === saboteur.playerId);
+}
 await control('advance');
 const state = await call(root, undefined, host.playerToken);
 const target = players.find(p => p.playerId === state.oracle.interrogate);

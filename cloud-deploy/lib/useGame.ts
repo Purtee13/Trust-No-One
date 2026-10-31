@@ -84,7 +84,7 @@ export function useGame() {
     submitVote: (suspect: string, pod: Pod) => perform("Locking vote…", async () => { await post("vote", { suspect, pod }); await refresh(); }),
     next: () => perform("Advancing…", async () => { await post("advance", {}, true); await refresh(); }),
     runOracle: () => perform("Oracle is thinking…", async () => { await post("generate-oracle", {}, true); await post("advance", {}, true); await refresh(); }),
-    runShadow: () => perform("Shadow is thinking…", async () => { await post("generate-shadow", {}, true); await refresh(); }),
+    runShadow: () => perform("Shadow is thinking…", async () => { await post("generate-shadow"); await refresh(); }),
     reveal: () => perform("Oracle is casting its final vote…", async () => { await post("generate-oracle-vote", {}, true); await post("advance", {}, true); await refresh(); }),
   };
 }

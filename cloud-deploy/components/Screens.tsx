@@ -182,15 +182,18 @@ function EvidenceImage({ src }: { src: string }) {
 /* ---------------- Shadow whisper (Saboteur only) ---------------- */
 function ShadowTip({ g }: { g: Game }) {
   const tip = g.state.shadowTip;
-  const mine = g.me === g.state.saboteurId;
+  const mine = g.state.privateRole === "saboteur";
   useEffect(() => { if (mine && tip) sfx.shadow(); }, [tip, mine]);
-  if (!mine || !tip) return null;
+  if (!mine) return null;
   return (
     <Panel glow="red">
       <div className="glitch-box">
         <p className="text-red-500 font-black tracking-widest">😈 SHADOW ADVICE <span className="text-[10px] text-red-800">(only you see this)</span></p>
-        <p className="text-red-200 mt-2 italic"><Typewriter key={tip} text={`“${tip}”`} speed={18} sound={false} /></p>
+        {tip && <p className="text-red-200 mt-2 italic"><Typewriter key={tip} text={`“${tip}”`} speed={18} sound={false} /></p>}
       </div>
+      <Btn variant="danger" className="mt-3" disabled={Boolean(g.busy)} onClick={() => { sfx.click(); g.runShadow(); }}>
+        {g.busy === "Shadow is thinking…" ? "Shadow is thinking…" : tip ? "Ask Shadow again" : "Ask Shadow"}
+      </Btn>
     </Panel>
   );
 }
@@ -300,17 +303,18 @@ export function Voting({ g }: { g: Game }) {
   const mine = g.state.players.find((p) => p.id === g.me);
   if (mine?.vote || mine?.voted) {
     return (
-      <Panel>
+      <div className="space-y-4"><Panel>
         <div className="text-center py-8">
           <p className="tracking-widest">🔒 DECISION LOCKED</p>
           <p className="text-emerald-700 text-sm mt-2">Waiting for the crew… Oracle is making its own prediction.</p>
           <div className="text-4xl mt-4 eye-pulse">👁</div>
         </div>
-      </Panel>
+      </Panel><ShadowTip g={g} /></div>
     );
   }
   return (
     <div className="space-y-4">
+      <ShadowTip g={g} />
       <Timer seconds={TIMES.voting} resetKey="voting" />
       <p className="text-center text-red-400 font-black tracking-[0.2em] animate-pulse">MAKE YOUR FINAL DECISION</p>
       <Panel>

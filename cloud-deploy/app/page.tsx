@@ -68,6 +68,5 @@ function HostControls({ g }: { g: ReturnType<typeof useGame> }) {
       onClick={() => { sfx.click(); (phase === "discussion" ? g.runOracle : phase === "voting" ? g.reveal : g.next)(); }}>
       {phase === "discussion" ? "👁 Run Oracle + interrogate" : phase === "voting" ? "👁 Oracle vote + reveal" : phase === "evidence" ? "Begin discussion" : "Open voting"}
     </button>
-    {["discussion", "interrogation", "voting"].includes(phase) && <button disabled={Boolean(g.busy)} className="border border-red-700 text-red-300 p-2 rounded disabled:opacity-40" onClick={() => { sfx.click(); g.runShadow(); }}>😈 Update Shadow advice</button>}
   </div>;
 }

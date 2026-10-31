@@ -29,7 +29,7 @@ The existing room codes from localhost do not transfer to this deployment. Creat
 - `lib/useGame.ts`: personalized polling, player sessions and host controls.
 - `db/schema.ts` and `drizzle/`: room storage migration.
 
-Gemma currently receives text evidence and statements. Image pixels and Maritime agent orchestration remain to be integrated. The host-authenticated manual `/oracle`, `/shadow`, and `/oracle-vote` endpoints are available for Maritime later. Production room state persists across Worker deployments.
+Gemma currently receives text evidence and statements. Image pixels and Maritime agent orchestration remain to be integrated. The host-authenticated manual `/oracle`, `/shadow`, and `/oracle-vote` write endpoints remain available for trusted Maritime orchestration; they do not return private Shadow advice. Production room state persists across Worker deployments.
 
 ## Player readiness
 
@@ -38,3 +38,7 @@ Each player, including the host, clicks **I'm ready** in the lobby. The player l
 ## Fair evidence assignment
 
 At launch, all four legitimate clues are shuffled independently of the secret Saboteur draw. The Saboteur can receive any clue, including the security image or Pod D report. The fourth clue is a legitimate navigation report about Pod A, not a Saboteur-only outdated manifest. Oracle receives evidence and statements without secret roles or objectives; the evidence card itself cannot identify the Saboteur. Start a new game to use this assignment; existing games retain their dealt evidence.
+
+## Private Shadow requests
+
+Only the Saboteur sees **Ask Shadow** in discussion, interrogation, and voting (including after locking their vote). `POST /api/rooms/:code/generate-shadow` requires the Saboteur's **player token**. A host token or any other player's token receives HTTP 403. Advice is included only in the Saboteur's personalized room snapshot; neither Oracle context nor other players receive it. Host controls no longer contain a Shadow button. The trusted server integration may still write agent advice through `/shadow`, but this does not grant read or generation access.

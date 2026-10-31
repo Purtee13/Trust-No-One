@@ -34,8 +34,12 @@ test('persistent hosted room privacy and full game', async () => {
  await call(root+'/ready',{ready:false},host.playerToken,409);
  for(const p of players)await call(root+'/answer',{answer:'D has all systems online.'},p.playerToken);
  await control('generate-oracle',{},503);
+ await control('generate-shadow',{},403);
+ const saboteurId=views.find(v=>v.me.role==='saboteur').me.id;
+ for(const p of players)await call(root+'/generate-shadow',{},p.playerToken,p.playerId===saboteurId?503:403);
  await control('oracle',{suspect:players[1].playerId,interrogate:host.playerId,confidence:60,reason:'Evidence.',question:'Why D?'});
  await control('shadow',{advice:'Question the report.'});
+ for(const p of players)assert.equal((await call(root,undefined,p.playerToken)).me.shadowAdvice,p.playerId===saboteurId?'Question the report.':null);
  await control('advance');
  await call(root+'/response',{response:'All three systems work.'},host.playerToken);
  await control('advance');

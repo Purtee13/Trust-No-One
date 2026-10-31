@@ -122,9 +122,11 @@ export function createGameHandler({ allowedOrigin = '*', generate, rooms = new M
       }
       if (req.method !== 'POST') fail(404, 'Route not found');
       if (action?.startsWith('generate-')) {
-        if (!host) fail(403, 'Host token required');
         const task = action.slice('generate-'.length);
         if (!['oracle', 'oracle-vote', 'shadow'].includes(task)) fail(404, 'Route not found');
+        if (task === 'shadow') {
+          if (!player || player.id !== room.saboteurId) fail(403, 'Only the Saboteur can ask Shadow');
+        } else if (!host) fail(403, 'Host token required');
         if (task === 'oracle' && (room.status !== 'discussion' || !room.players.every(p => p.answer))) fail(409, 'Need discussion phase and all answers');
         if (task === 'oracle-vote' && room.status !== 'voting') fail(409, 'Not voting phase');
         if (task === 'shadow' && !['discussion', 'interrogation', 'voting'].includes(room.status)) fail(409, 'Shadow unavailable in this phase');
