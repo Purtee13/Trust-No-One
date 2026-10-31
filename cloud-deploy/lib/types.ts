@@ -32,7 +32,7 @@ export type GameState = {
   interrogationResponse?: string;
   oracleVote?: { saboteur: string; pod: Pod }; // Oracle's final accusation
   privateRole?: string;
-  evidence?: { kind: string; text: string; imageUrl?: string };
+  evidence?: { kind: string; text: string; imageUrl?: string; role?: string };
   result?: {
     correctPod: Pod; saboteurId: string; chosenPods: Pod[]; suspects: string[];
     survived: boolean; humansCorrect: boolean; oracleCorrect: boolean;

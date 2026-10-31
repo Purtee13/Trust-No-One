@@ -1,26 +1,105 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #ededed;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ---------- Background: drifting starfield + CRT scanlines ---------- */
+.starfield {
+  position: fixed; inset: -50%; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, #a7f3d0 50%, transparent 51%),
+    radial-gradient(1px 1px at 30% 70%, #ffffff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 55% 35%, #6ee7b7 50%, transparent 51%),
+    radial-gradient(1px 1px at 75% 80%, #ffffff 50%, transparent 51%),
+    radial-gradient(1px 1px at 90% 15%, #d1fae5 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 20% 90%, #ffffff 50%, transparent 51%),
+    radial-gradient(1px 1px at 65% 55%, #a7f3d0 50%, transparent 51%),
+    radial-gradient(1px 1px at 45% 5%, #ffffff 50%, transparent 51%);
+  background-size: 300px 300px;
+  opacity: 0.35;
+  animation: drift 120s linear infinite;
+}
+@keyframes drift { to { transform: translate3d(-300px, 150px, 0); } }
+
+.scanlines {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(16,185,129,0.04) 0 1px, transparent 1px 3px);
+}
+
+/* ---------- Red alert during interrogation / voting ---------- */
+.red-alert::after {
+  content: ""; position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  box-shadow: inset 0 0 120px rgba(239, 68, 68, 0.45);
+  animation: redpulse 1.6s ease-in-out infinite;
+}
+@keyframes redpulse { 50% { box-shadow: inset 0 0 40px rgba(239, 68, 68, 0.15); } }
+
+/* ---------- Text effects ---------- */
+.glitch { position: relative; display: inline-block; }
+.glitch::before, .glitch::after {
+  content: attr(data-text); position: absolute; inset: 0; overflow: hidden;
+}
+.glitch::before { color: #f43f5e; clip-path: inset(0 0 60% 0); animation: glitch1 2.4s infinite steps(1); opacity: 0; }
+.glitch::after  { color: #22d3ee; clip-path: inset(55% 0 0 0); animation: glitch2 2.1s infinite steps(1); opacity: 0; }
+@keyframes glitch1 { 0%, 88%, 97%, 100% { opacity: 0; transform: none; } 90% { opacity: 0.85; transform: translate(-3px, -1px); } 94% { opacity: 0.85; transform: translate(3px, 1px); } }
+@keyframes glitch2 { 0%, 85%, 95%, 100% { opacity: 0; transform: none; } 87% { opacity: 0.85; transform: translate(3px, 1px); } 92% { opacity: 0.85; transform: translate(-3px, 0); } }
+
+.glitch-box { animation: flicker 4s infinite; }
+@keyframes flicker { 0%, 96%, 100% { opacity: 1; } 97% { opacity: 0.4; } 98% { opacity: 1; } 99% { opacity: 0.6; } }
+
+.caret { animation: blink 0.8s steps(1) infinite; color: #34d399; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.eye-pulse { display: inline-block; animation: eye 2.6s ease-in-out infinite; }
+@keyframes eye {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(16,185,129,0.5)); }
+  50% { transform: scale(1.12); filter: drop-shadow(0 0 18px rgba(16,185,129,0.9)); }
+  92% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } 98% { transform: scaleY(1); }
+}
+
+.verdict-glow { animation: verdict 1.8s ease-in-out infinite; }
+@keyframes verdict { 50% { text-shadow: 0 0 24px rgba(52, 211, 153, 0.9); } }
+
+/* ---------- Entrances & impacts ---------- */
+.fade-up { animation: fadeUp 0.5s ease-out both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.shake-once { animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes shake {
+  10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-7px); } 40%, 60% { transform: translateX(7px); }
+}
+
+.grow-bar { animation: grow 1.2s ease-out both; transform-origin: left; }
+@keyframes grow { from { transform: scaleX(0); } }
+
+.pod-card {
+  border: 1px solid rgba(16,185,129,0.5); border-radius: 0.75rem; padding: 0.6rem 0; text-align: center;
+  background: radial-gradient(circle at 50% 0%, rgba(16,185,129,0.18), transparent 70%);
+  box-shadow: 0 0 14px rgba(16,185,129,0.2);
+}
+
+/* Security camera scan line over the evidence image */
+.scan-image { overflow: hidden; border-radius: 0.5rem; }
+.scan-image::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 30%; top: -30%;
+  background: linear-gradient(to bottom, transparent, rgba(52,211,153,0.18), transparent);
+  animation: scan 3s linear infinite;
+}
+@keyframes scan { to { top: 100%; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; }
 }

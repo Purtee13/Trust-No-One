@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { sfx } from "./sfx";
 
 export function Panel({ children, glow = "green" }: { children: React.ReactNode; glow?: "green" | "red" | "amber" }) {
   const c = {
@@ -45,13 +46,14 @@ export function Timer({ seconds, resetKey, onDone }: { seconds: number; resetKey
   void resetKey; // timer restarts because each screen remounts
   useEffect(() => {
     if (left <= 0) { onDone?.(); return; }
-    const t = setTimeout(() => setLeft((l) => l - 1), 1000);
+    const t = setTimeout(() => { if (left <= 11) sfx.tick(); setLeft((l) => l - 1); }, 1000);
     return () => clearTimeout(t);
   }, [left]); // eslint-disable-line react-hooks/exhaustive-deps
   const urgent = left <= 10;
   return (
-    <div className={`text-right font-bold tabular-nums ${urgent ? "text-red-500 animate-pulse" : "text-emerald-400"}`}>
-      ⏱ {Math.floor(left / 60)}:{String(Math.max(left, 0) % 60).padStart(2, "0")}
+    <div className={`flex justify-between items-center font-bold tabular-nums ${urgent ? "text-red-500 animate-pulse" : "text-emerald-400"}`}>
+      <span className="text-[10px] tracking-[0.3em]">{urgent ? "⚠ LIFE SUPPORT CRITICAL" : "LIFE SUPPORT"}</span>
+      <span>⏱ {Math.floor(left / 60)}:{String(Math.max(left, 0) % 60).padStart(2, "0")}</span>
     </div>
   );
 }
