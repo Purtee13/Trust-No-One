@@ -24,8 +24,8 @@ export function Home({ g }: { g: Game }) {
     <div className="space-y-6 text-center">
       <div className="py-6">
         <div className="text-7xl mb-3 eye-pulse">👁</div>
-        <h1 className="glitch text-4xl font-black tracking-[0.2em] text-emerald-300" data-text="TRUST NO ONE">TRUST NO ONE</h1>
-        <p className="text-emerald-600 mt-3 text-xs tracking-[0.4em]">STATION ASTERIA · 2187</p>
+        <h1 className="glitch text-3xl sm:text-4xl font-black tracking-[0.12em] sm:tracking-[0.2em] text-emerald-300" data-text="TRUST NO ONE">TRUST NO ONE</h1>
+        <p className="text-emerald-600 mt-3 text-xs tracking-[0.25em] sm:tracking-[0.4em]">STATION ASTERIA · 2187</p>
         <p className="text-emerald-700 mt-2 text-sm">One of you is lying. The Oracle is watching.</p>
       </div>
       <button onClick={() => { sfx.click(); setStory(true); }}
@@ -76,7 +76,7 @@ export function Lobby({ g }: { g: Game }) {
       <Panel>
         <p className="text-red-400 text-xs tracking-[0.3em] animate-pulse mb-4">⚠ HULL INTEGRITY FAILING · GATHER YOUR CREW</p>
         <Label>Room code</Label>
-        <p className="text-5xl font-black tracking-[0.3em] text-center my-4">{state.roomCode}</p>
+        <p className="text-4xl sm:text-5xl font-black tracking-[0.2em] sm:tracking-[0.3em] text-center my-4">{state.roomCode}</p>
         <Label>Crew manifest ({count}/4)</Label>
         <ul className="space-y-2 mb-6">
           {state.players.map((p, i) => (
@@ -129,7 +129,7 @@ function EvidenceFile({ g, isSab }: { g: Game; isSab: boolean }) {
     <div className="space-y-4">
       <Panel>
         <p className="text-[10px] tracking-[0.3em] text-emerald-700">EVIDENCE FILE · DECRYPTED</p>
-        <p className="text-2xl font-black mt-1 fade-up">{info.icon} {info.title}</p>
+        <p className="text-xl sm:text-2xl font-black mt-1 fade-up">{info.icon} {info.title}</p>
         {info.flavor && <p className="text-emerald-500 text-sm italic mt-1">{info.flavor}</p>}
         <div className="mt-4"><Label>Your private evidence</Label></div>
         {ev?.imageUrl && <EvidenceImage src={ev.imageUrl} />}
@@ -142,7 +142,7 @@ function EvidenceFile({ g, isSab }: { g: Game; isSab: boolean }) {
         <Panel glow="red">
           <div className="glitch-box">
             <p className="text-[10px] tracking-[0.4em] text-red-700">▓▓ CLASSIFIED TRANSMISSION ▓▓</p>
-            <p className="glitch text-xl font-black text-red-500 mt-1 whitespace-nowrap" data-text="😈 YOU ARE THE SABOTEUR">😈 YOU ARE THE SABOTEUR</p>
+            <p className="text-lg sm:text-xl font-black text-red-500 mt-1">😈 YOU ARE THE <span className="glitch" data-text="SABOTEUR">SABOTEUR</span></p>
             {SABOTEUR_BRIEF.lines.map((l) => <p key={l} className="text-red-200/80 text-sm">{l}</p>)}
             <p className="mt-3 text-red-100 font-bold">{SABOTEUR_BRIEF.mission}</p>
             <p className="text-red-400 text-xs mt-3 tracking-widest">YOU WIN IF:</p>
@@ -394,7 +394,7 @@ export function Result({ g }: { g: Game }) {
           <Typewriter text={tied ? "CREW COULD NOT AGREE…" : "ESCAPE SEQUENCE INITIATED…"} speed={40} />
         </p>
         {step >= 1 && (
-          <p className="text-5xl font-black mt-3 fade-up">
+          <p className="text-4xl sm:text-5xl font-black mt-3 fade-up">
             {pod ? <>🚀 POD {pod}<span className="block text-sm tracking-[0.4em] text-emerald-500 mt-1">{POD_NAMES[pod]}</span></>
               : <span className="text-red-500 text-3xl">NO POD SELECTED<span className="block text-sm text-red-300 mt-1">Tie: {result?.chosenPods.join(" / ") || "no votes"}</span></span>}
           </p>
@@ -411,15 +411,15 @@ export function Result({ g }: { g: Game }) {
         )}
         {step >= 5 && (
           survived
-            ? <p className="text-3xl font-black text-emerald-400 mt-4 fade-up">🚀 ESCAPE SUCCESSFUL</p>
-            : <p className="text-3xl font-black text-red-500 mt-4 fade-up">💥 {pod ? "LAUNCH FAILED" : "THE STATION WAS LOST"}</p>
+            ? <p className="text-2xl sm:text-3xl font-black text-emerald-400 mt-4 fade-up">🚀 ESCAPE SUCCESSFUL</p>
+            : <p className="text-2xl sm:text-3xl font-black text-red-500 mt-4 fade-up">💥 {pod ? "LAUNCH FAILED" : "THE STATION WAS LOST"}</p>
         )}
       </Panel>
 
       {step >= 6 && (
         <Panel glow="red">
           <p className="text-xs tracking-[0.4em] text-red-700">SABOTEUR IDENTIFIED…</p>
-          <p className="glitch text-4xl font-black text-red-500 mt-2" data-text={`😈 ${nameOf(g, result?.saboteurId)}`}>😈 {nameOf(g, result?.saboteurId)}</p>
+          <p className="glitch text-3xl sm:text-4xl font-black text-red-500 mt-2" data-text={`😈 ${nameOf(g, result?.saboteurId)}`}>😈 {nameOf(g, result?.saboteurId)}</p>
         </Panel>
       )}
 
@@ -439,7 +439,7 @@ export function Result({ g }: { g: Game }) {
         </Panel>
       )}
 
-      {step >= 8 && <p className="text-3xl font-black tracking-wide fade-up verdict-glow">{verdict}</p>}
+      {step >= 8 && <p className="text-2xl sm:text-3xl font-black tracking-wide fade-up verdict-glow">{verdict}</p>}
     </div>
   );
 }

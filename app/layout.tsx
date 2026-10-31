@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Trust No One",
   description: "A social-deduction game where AI agents play too.",
 };
-export const viewport: Viewport = { width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#000000" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -45,7 +45,7 @@ export function Briefing({ onDone, compact = false }: { onDone: () => void; comp
       <p className="text-xs tracking-[0.4em] text-emerald-700">▶ INCOMING TRANSMISSION · STATION ASTERIA</p>
       {BRIEFING.slice(0, Math.min(i + 1, BRIEFING.length)).map((line, k) => {
         const cls =
-          line.tone === "big" ? "text-3xl font-black text-emerald-200 tracking-wide" :
+          line.tone === "big" ? "text-2xl sm:text-3xl font-black text-emerald-200 tracking-wide" :
           line.tone === "alert" ? "text-lg font-bold text-red-400" :
           line.tone === "dim" ? "text-emerald-500 italic" :
           "text-lg text-emerald-100";
@@ -88,7 +88,7 @@ export function RuleCard() {
   return (
     <Panel>
       <p className="text-xs tracking-[0.3em] text-emerald-600 mb-2">SAFE POD CHECKLIST</p>
-      <div className="flex justify-around text-center my-2">
+      <div className="flex flex-wrap justify-around gap-x-3 gap-y-1 text-center my-2">
         {["🫁 OXYGEN", "📡 NAVIGATION", "⚡ POWER"].map((s) => <span key={s} className="text-sm font-bold">{s} ✓</span>)}
       </div>
       <p className="text-emerald-300/80 text-sm">{RULE}</p>

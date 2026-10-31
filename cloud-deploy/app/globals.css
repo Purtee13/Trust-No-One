@@ -10,14 +10,20 @@
   --color-foreground: var(--foreground);
 }
 
+html, body {
+  max-width: 100%;
+  overflow-x: clip;
+}
 body {
   background: var(--background);
   color: var(--foreground);
+  -webkit-text-size-adjust: 100%;
 }
+input, textarea { font-size: 16px; } /* stops iPhone auto-zoom on focus */
 
 /* ---------- Background: drifting starfield + CRT scanlines ---------- */
 .starfield {
-  position: fixed; inset: -50%; z-index: 0; pointer-events: none;
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background-image:
     radial-gradient(1px 1px at 10% 20%, #a7f3d0 50%, transparent 51%),
     radial-gradient(1px 1px at 30% 70%, #ffffff 50%, transparent 51%),
@@ -31,7 +37,7 @@ body {
   opacity: 0.35;
   animation: drift 120s linear infinite;
 }
-@keyframes drift { to { transform: translate3d(-300px, 150px, 0); } }
+@keyframes drift { to { background-position: -300px 150px; } }
 
 .scanlines {
   position: fixed; inset: 0; z-index: 1; pointer-events: none;
