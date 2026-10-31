@@ -39,7 +39,7 @@ All remaining requests require `Authorization: Bearer TOKEN`. POST requests take
 Phases: `lobby → evidence → discussion → interrogation → voting → result`.
 Host advances explicitly, so show host controls or have a trusted orchestrator invoke them. Discussion requires all four answers and Oracle analysis before advancement; interrogation requires the selected player's response; voting requires all four votes and Oracle's final vote.
 
-Render `room.me` for private role, evidence, objective, and Shadow advice. Render `room.players` for names, public answers/responses, and submission indicators. Individual human votes stay private until aggregation at reveal. Evidence image URLs are backend-relative: prepend the backend origin. `/evidence/pod-b.svg` supplies a built-in illustrative image; the AI integration must fetch or attach this actual image when invoking a multimodal model.
+Render `room.me` for private role, evidence, objective, and Shadow advice. Render `room.players` for names, public answers/responses, and submission indicators. Individual human votes stay private until aggregation at reveal. Evidence image URLs are backend-relative: prepend the backend origin. `/evidence/pod-b.png` supplies the built-in illustrative image (the legacy SVG route is also retained); Gemma receives the corresponding PNG bytes automatically when analyzing the evidence.
 
 At `result`, show `room.result`: correct pod, Saboteur ID, winning pod/suspect arrays, survival, human correctness, and Oracle correctness. Tied pod votes count as failure to select a safe pod; tied suspect votes count as failure to identify the Saboteur. Display ties explicitly.
 
@@ -78,7 +78,7 @@ All paths start with `/api/rooms/:code`. Calls await generation and return `{ok:
 
 Configuration: `GEMMA_PROVIDER` (default `google`), `GOOGLE_API_KEY`, and `GOOGLE_GEMMA_MODEL` (default `gemma-4-26b-a4b-it`). For explicit Ollama mode: `OLLAMA_URL` (default `http://localhost:11434`), `GEMMA_MODEL` (default `gemma4:e4b`), `GEMMA_TIMEOUT_MS` (default `180000`). These are server environment variables. Ollama is called by the backend; phones never need direct access to Ollama. A deployed backend needs network access to the model service; its localhost refers to the deployed machine.
 
-Currently Gemma receives **text evidence and conversation**, not image pixels. The SVG evidence is displayed by the frontend but not yet attached to model requests; actual multimodal evidence remains integration work. Oracle never receives the actual Saboteur ID or human votes; Shadow receives the secret identity and target. This local Shadow call is a temporary integration option, not a Maritime agent.
+Gemma receives **text evidence, conversation, and the security-camera PNG pixels**. Players and the model use the same image. Oracle analysis and final voting both include image input; legacy SVG clue URLs resolve to the same rasterized camera image. Oracle never receives the actual Saboteur ID or human votes; Shadow receives the secret identity and target. This local Shadow call is a temporary integration option, not a Maritime agent.
 
 The adapter uses Ollama's [chat API](https://docs.ollama.com/api/chat) and [JSON schema output](https://docs.ollama.com/capabilities/structured-outputs), with server-side response validation.
 
@@ -121,3 +121,6 @@ Only the Saboteur sees **Ask Shadow** in discussion, interrogation, and voting (
 
 ## App link:
 https://trust-no-one-crew-game.fasteave1.chatgpt.site/
+## Multimodal evidence
+
+The security-camera artwork is rasterized to PNG. `lib/evidence-image.js` in the deployment stores its canonical bytes; the backend serves these at `/evidence/pod-b.png`. Google requests attach those bytes as `inlineData` with `image/png`; optional Ollama requests use the message `images` array. Each image is labeled with the player holding the clue. The payload contains no secret role labels for Oracle. Unknown image URLs fail explicitly instead of being silently ignored. To change the camera image, replace the canonical raster asset and its evidence text together.

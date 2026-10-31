@@ -29,7 +29,7 @@ The existing room codes from localhost do not transfer to this deployment. Creat
 - `lib/useGame.ts`: personalized polling, player sessions and host controls.
 - `db/schema.ts` and `drizzle/`: room storage migration.
 
-Gemma currently receives text evidence and statements. Image pixels and Maritime agent orchestration remain to be integrated. The host-authenticated manual `/oracle`, `/shadow`, and `/oracle-vote` write endpoints remain available for trusted Maritime orchestration; they do not return private Shadow advice. Production room state persists across Worker deployments.
+Gemma receives text evidence, statements, and actual security-camera image pixels. Maritime agent orchestration remains to be integrated. The host-authenticated manual `/oracle`, `/shadow`, and `/oracle-vote` write endpoints remain available for trusted Maritime orchestration; they do not return private Shadow advice. Production room state persists across Worker deployments.
 
 ## Player readiness
 
@@ -42,3 +42,7 @@ At launch, all four legitimate clues are shuffled independently of the secret Sa
 ## Private Shadow requests
 
 Only the Saboteur sees **Ask Shadow** in discussion, interrogation, and voting (including after locking their vote). `POST /api/rooms/:code/generate-shadow` requires the Saboteur's **player token**. A host token or any other player's token receives HTTP 403. Advice is included only in the Saboteur's personalized room snapshot; neither Oracle context nor other players receive it. Host controls no longer contain a Shadow button. The trusted server integration may still write agent advice through `/shadow`, but this does not grant read or generation access.
+
+## Multimodal evidence
+
+The security-camera artwork is rasterized to PNG. `lib/evidence-image.js` in the deployment stores its canonical bytes; the backend serves these at `/evidence/pod-b.png`. Google requests attach those bytes as `inlineData` with `image/png`; optional Ollama requests use the message `images` array. Each image is labeled with the player holding the clue. The payload contains no secret role labels for Oracle. Unknown image URLs fail explicitly instead of being silently ignored. To change the camera image, replace the canonical raster asset and its evidence text together.

@@ -4,7 +4,7 @@ import { randomInt } from 'node:crypto';
 // Every card is legitimate and can belong to either a crewmate or Saboteur.
 export function assignRoles(players, draw = randomInt) {
   const cards = [
-    { role: 'security-officer', evidence: { kind: 'image', role: 'security-officer', imageUrl: '/evidence/pod-b.svg',
+    { role: 'security-officer', evidence: { kind: 'image', role: 'security-officer', imageUrl: '/evidence/pod-b.png',
       text: 'Final security image recovered before the explosion: Pod B (Borealis) shows severe damage to its external power cables.\nPOD B → POWER MAY BE COMPROMISED.\nYou know nothing about its oxygen or navigation.' } },
     { role: 'life-support-engineer', evidence: { kind: 'text', role: 'life-support-engineer',
       text: "Yesterday's maintenance report: Pod C (Cygnus) FAILED its emergency oxygen test.\nPOD C → OXYGEN ✗\nPod C cannot safely evacuate the crew." } },
