@@ -32,6 +32,3 @@ Next.js, React, Tailwind CSS, Gemma 4 (Gemini API), Maritime (agent hosting)
 
 ## License
 MIT — see [LICENSE](LICENSE).
-
-## AI agents
-The Oracle 👁 and Shadow 😈 agents run on Cloudflare Workers + Durable Objects. See [`agents/`](agents/README.md). Frontend client: `lib/agents.ts`.
