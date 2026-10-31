@@ -34,7 +34,7 @@ export default function Page() {
 function HostControls({ g }: { g: ReturnType<typeof useGame> }) {
   if (!g.isHost || ["home", "lobby", "result"].includes(g.state.phase)) return null;
   const phase = g.state.phase;
-  const ready = phase === "evidence" ||
+  const ready = (phase === "evidence" && g.state.players.length === 4 && g.state.players.every(p => p.ready)) ||
     (phase === "discussion" && g.state.players.every(p => p.answer)) ||
     (phase === "interrogation" && Boolean(g.state.interrogationResponse)) ||
     (phase === "voting" && g.state.players.every(p => p.voted));

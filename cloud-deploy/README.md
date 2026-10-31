@@ -30,3 +30,7 @@ The existing room codes from localhost do not transfer to this deployment. Creat
 - `db/schema.ts` and `drizzle/`: room storage migration.
 
 Gemma currently receives text evidence and statements. Image pixels and Maritime agent orchestration remain to be integrated. The host-authenticated manual `/oracle`, `/shadow`, and `/oracle-vote` endpoints are available for Maritime later. Production room state persists across Worker deployments.
+
+## Player readiness
+
+Each player, including the host, clicks **I'm ready** in the lobby. The player list shows who is ready; **Launch Mission** unlocks only at 4/4. Players may cancel readiness before launch. After launch, readiness resets: each player clicks **I've read my evidence**. The host's **Begin discussion** button unlocks once all four finish reading. The backend enforces both checks. `POST /api/rooms/:code/ready` takes `{ "ready": true }` (or false) with a player token in lobby/evidence only.

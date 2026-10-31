@@ -77,6 +77,7 @@ export function useGame() {
     clearError: () => setError(""),
     leave: () => { sessionStorage.removeItem("trust-session"); setSession(null); setState(initial); setError(""); },
     createRoom: (name: string) => enter(name), joinRoom: (code: string, name: string) => enter(name, code),
+    setReady: (ready: boolean) => perform("Updating readiness…", async () => { await post("ready", { ready }); await refresh(); }),
     startGame: () => perform("Launching…", async () => { await post("start", {}, true); await refresh(); }),
     submitAnswer: (answer: string) => perform("Submitting…", async () => { await post("answer", { answer }); await refresh(); }),
     submitInterrogation: (response: string) => perform("Submitting…", async () => { await post("response", { response }); await refresh(); }),

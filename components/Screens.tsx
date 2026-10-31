@@ -36,6 +36,8 @@ export function Home({ g }: { g: Game }) {
 /* ---------------- 2. LOBBY ---------------- */
 export function Lobby({ g }: { g: Game }) {
   const { state } = g;
+  const mine = state.players.find(p => p.id === g.me);
+  const readyCount = state.players.filter(p => p.ready).length;
   return (
     <Panel>
       <Label>Room code</Label>
@@ -43,13 +45,15 @@ export function Lobby({ g }: { g: Game }) {
       <Label>Crew ({state.players.length}/4)</Label>
       <ul className="space-y-2 mb-6">
         {state.players.map((p) => (
-          <li key={p.id} className="flex items-center gap-2"><span className="text-emerald-400">●</span>{p.name}</li>
+          <li key={p.id} className="flex items-center gap-2"><span className="text-emerald-400">●</span>{p.name}<span className="ml-auto text-xs">{p.ready ? "✓ READY" : "NOT READY"}</span></li>
         ))}
         {Array.from({ length: Math.max(0, 4 - state.players.length) }).map((_, i) => (
           <li key={i} className="text-emerald-900 animate-pulse">○ waiting…</li>
         ))}
       </ul>
-      {g.isHost ? <Btn disabled={state.players.length < 4} onClick={g.startGame}>Launch Mission 🚀</Btn> : <p>Waiting for the host to launch…</p>}
+      <Btn onClick={() => g.setReady(!mine?.ready)}>{mine?.ready ? "Cancel ready" : "I'm ready"}</Btn>
+      <p className="text-center text-sm my-3" role="status">{readyCount}/4 players ready</p>
+      {g.isHost ? <Btn disabled={state.players.length !== 4 || readyCount !== 4} onClick={g.startGame}>Launch Mission 🚀</Btn> : <p>Waiting for the host to launch…</p>}
     </Panel>
   );
 }
@@ -80,7 +84,10 @@ export function Evidence({ g }: { g: Game }) {
         </Panel>
       )}
       <p className="text-center text-xs text-red-400 tracking-widest">⚠ DO NOT SHOW THIS SCREEN</p>
-      <p className="text-center text-sm">Read your evidence. The host will begin discussion when everyone is ready.</p>
+      <Btn onClick={() => g.setReady(!state.players.find(p => p.id === me)?.ready)}>
+        {state.players.find(p => p.id === me)?.ready ? "Ready — undo" : "I've read my evidence"}
+      </Btn>
+      <p className="text-center text-sm" role="status">{state.players.filter(p => p.ready).length}/4 finished reading. The host can begin discussion once everyone is ready.</p>
     </div>
   );
 }

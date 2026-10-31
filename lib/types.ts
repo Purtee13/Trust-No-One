@@ -10,6 +10,7 @@ export type Player = {
   answer?: string;                       // Round 1 answer
   response?: string;
   voted?: boolean;
+  ready?: boolean;
   vote?: { saboteur: string; pod: Pod }; // final vote
 };
 

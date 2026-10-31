@@ -102,3 +102,7 @@ Verification commands:
 - `npm run test:live`: with both servers and Ollama running, creates four sessions through the frontend proxy and plays every phase with real Gemma calls. Consumes a room and may take a few minutes. Set `TEST_URL` to override the frontend URL.
 
 `BACKEND_URL` configures the Next.js proxy destination (default `http://127.0.0.1:3001`). `npm start` now starts the production **frontend**, not the backend.
+
+## Player readiness
+
+Each player, including the host, clicks **I'm ready** in the lobby. The player list shows who is ready; **Launch Mission** unlocks only at 4/4. Players may cancel readiness before launch. After launch, readiness resets: each player clicks **I've read my evidence**. The host's **Begin discussion** button unlocks once all four finish reading. The backend enforces both checks. `POST /api/rooms/:code/ready` takes `{ "ready": true }` (or false) with a player token in lobby/evidence only.

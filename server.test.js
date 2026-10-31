@@ -28,6 +28,14 @@ test('four players complete a game with private roles, locked votes and guarded 
   await call(root, undefined, null, 401);
   await call(`${root}/start`, {}, first.playerToken, 403);
   const host = first.hostToken;
+  await call(`${root}/start`, {}, host, 409);
+  await call(`${root}/ready`, { ready: true }, host, 403);
+  await call(`${root}/ready`, { ready: 'yes' }, first.playerToken, 400);
+  for (const p of players) await call(`${root}/ready`, { ready: true }, p.playerToken);
+  assert.equal((await call(root, undefined, first.playerToken)).players.filter(p => p.ready).length, 4);
+  await call(`${root}/ready`, { ready: false }, first.playerToken);
+  await call(`${root}/start`, {}, host, 409);
+  await call(`${root}/ready`, { ready: true }, first.playerToken);
   await call(`${root}/start`, {}, host);
   const views = await Promise.all(players.map(p => call(root, undefined, p.playerToken)));
   const saboteur = views.find(v => v.me.role === 'saboteur').me.id;
@@ -37,7 +45,11 @@ test('four players complete a game with private roles, locked votes and guarded 
     assert.equal(view.players.some(p => 'role' in p || 'token' in p || 'evidence' in p), false);
     assert.equal(view.result, undefined);
   }
+  assert.equal(views.every(v => v.players.every(p => !p.ready)), true);
+  await call(`${root}/advance`, {}, host, 409);
+  for (const p of players) await call(`${root}/ready`, { ready: true }, p.playerToken);
   await call(`${root}/advance`, {}, host);
+  await call(`${root}/ready`, { ready: false }, first.playerToken, 409);
   await call(`${root}/advance`, {}, host, 409);
   await call(`${root}/generate-oracle`, {}, host, 409);
   for (const p of players) await call(`${root}/answer`, { answer: 'D looks safe' }, p.playerToken);

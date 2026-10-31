@@ -15,7 +15,7 @@ export function createGameHandler({ allowedOrigin = '*', generate, rooms = new M
   const playerView = (room, player) => ({
     code: room.code, status: room.status, hostId: room.hostId,
     players: room.players.map(p => ({ id: p.id, name: p.name,
-      answered: Boolean(p.answer), voted: Boolean(p.vote),
+      answered: Boolean(p.answer), voted: Boolean(p.vote), ready: Boolean(p.ready),
       ...(p.answer ? { answer: p.answer } : {}),
       ...(p.response ? { response: p.response } : {}) })),
     question: 'Which pod do you believe is safest? Explain why.',
@@ -147,8 +147,14 @@ export function createGameHandler({ allowedOrigin = '*', generate, rooms = new M
         } finally { room.generating = false; }
       }
       if (['start', 'advance', 'oracle', 'oracle-vote', 'shadow'].includes(action) && !host) fail(403, 'Host token required');
-      if (action === 'start') {
+      if (action === 'ready') {
+        if (!player) fail(403, 'Player token required');
+        if (!['lobby', 'evidence'].includes(room.status)) fail(409, 'Readiness is only available in lobby or evidence');
+        if (typeof body.ready !== 'boolean') fail(400, 'ready must be a boolean');
+        player.ready = body.ready;
+      } else if (action === 'start') {
         if (room.status !== 'lobby' || room.players.length !== 4) fail(409, 'Start requires four players in lobby');
+        if (!room.players.every(p => p.ready)) fail(409, 'All four players must be ready before launch');
         const sabotage = randomInt(4);
         const clues = [
           { kind: 'image', text: 'Security camera shows hull damage around Pod B.', imageUrl: '/evidence/pod-b.svg' },
@@ -157,6 +163,7 @@ export function createGameHandler({ allowedOrigin = '*', generate, rooms = new M
         ];
         let clue = 0;
         room.players.forEach((p, i) => {
+          p.ready = false;
           p.role = i === sabotage ? 'saboteur' : ['security-officer', 'maintenance-engineer', 'systems-engineer'][clue];
           p.evidence = i === sabotage ? { kind: 'text', text: 'Outdated manifest lists Pod B as ready. Pod A is offline.' } : clues[clue++];
         });
@@ -166,6 +173,7 @@ export function createGameHandler({ allowedOrigin = '*', generate, rooms = new M
         if (room.generating) fail(409, 'Wait for the AI request to finish');
         const next = phases[phases.indexOf(room.status) + 1];
         if (!next || room.status === 'lobby') fail(409, 'Cannot advance; use start from lobby');
+        if (room.status === 'evidence' && !room.players.every(p => p.ready)) fail(409, 'All four players must finish reading their evidence');
         if (room.status === 'discussion' && (!room.players.every(p => p.answer) || !room.oracle)) fail(409, 'Need all answers and Oracle analysis');
         if (room.status === 'interrogation' && !room.players.find(p => p.id === room.oracle.interrogate)?.response) fail(409, 'Need interrogation response');
         if (room.status === 'voting' && (!room.players.every(p => p.vote) || !room.oracleVote)) fail(409, 'Need all votes and Oracle vote');
