@@ -40,6 +40,8 @@ test('four players complete a game with private roles, locked votes and guarded 
   const views = await Promise.all(players.map(p => call(root, undefined, p.playerToken)));
   const saboteur = views.find(v => v.me.role === 'saboteur').me.id;
   assert.equal(views.filter(v => v.me.role === 'saboteur').length, 1);
+  assert.equal(new Set(views.map(v => v.me.evidence.text)).size, 4);
+  assert.ok(views.every(v => !v.me.evidence.text.includes('Outdated manifest')));
   for (const view of views) {
     assert.equal(view.saboteurId, undefined);
     assert.equal(view.players.some(p => 'role' in p || 'token' in p || 'evidence' in p), false);

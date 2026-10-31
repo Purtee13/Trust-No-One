@@ -1,4 +1,5 @@
-import { randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
+import { assignRoles } from './assign-roles.js';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 
 const phases = ['lobby', 'evidence', 'discussion', 'interrogation', 'voting', 'result'];
 const pods = ['A', 'B', 'C', 'D'];
@@ -155,19 +156,7 @@ export function createGameHandler({ allowedOrigin = '*', generate, rooms = new M
       } else if (action === 'start') {
         if (room.status !== 'lobby' || room.players.length !== 4) fail(409, 'Start requires four players in lobby');
         if (!room.players.every(p => p.ready)) fail(409, 'All four players must be ready before launch');
-        const sabotage = randomInt(4);
-        const clues = [
-          { kind: 'image', text: 'Security camera shows hull damage around Pod B.', imageUrl: '/evidence/pod-b.svg' },
-          { kind: 'text', text: 'Maintenance logs: Pod C failed its oxygen-system test.' },
-          { kind: 'text', text: 'Pod D system report: power ONLINE, oxygen ONLINE, navigation ONLINE.' }
-        ];
-        let clue = 0;
-        room.players.forEach((p, i) => {
-          p.ready = false;
-          p.role = i === sabotage ? 'saboteur' : ['security-officer', 'maintenance-engineer', 'systems-engineer'][clue];
-          p.evidence = i === sabotage ? { kind: 'text', text: 'Outdated manifest lists Pod B as ready. Pod A is offline.' } : clues[clue++];
-        });
-        room.saboteurId = room.players[sabotage].id;
+        room.saboteurId = assignRoles(room.players);
         room.status = 'evidence';
       } else if (action === 'advance') {
         if (room.generating) fail(409, 'Wait for the AI request to finish');

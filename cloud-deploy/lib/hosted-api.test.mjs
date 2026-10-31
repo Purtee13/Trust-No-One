@@ -24,6 +24,8 @@ test('persistent hosted room privacy and full game', async () => {
  await control('start');
  const views=await Promise.all(players.map(p=>call(root,undefined,p.playerToken)));
  assert.equal(views.filter(v=>v.me.role==='saboteur').length,1);
+  assert.equal(new Set(views.map(v => v.me.evidence.text)).size, 4);
+  assert.ok(views.every(v => !v.me.evidence.text.includes('Outdated manifest')));
  for(const v of views)assert.equal(v.players.some(p=>'role' in p||'token' in p),false);
  assert.equal(views.every(v=>v.players.every(p=>!p.ready)),true);
  await control('advance',{},409);
