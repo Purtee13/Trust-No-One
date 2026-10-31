@@ -46,3 +46,7 @@ Only the Saboteur sees **Ask Shadow** in discussion, interrogation, and voting (
 ## Multimodal evidence
 
 The security-camera artwork is rasterized to PNG. `lib/evidence-image.js` in the deployment stores its canonical bytes; the backend serves these at `/evidence/pod-b.png`. Google requests attach those bytes as `inlineData` with `image/png`; optional Ollama requests use the message `images` array. Each image is labeled with the player holding the clue. The payload contains no secret role labels for Oracle. Unknown image URLs fail explicitly instead of being silently ignored. To change the camera image, replace the canonical raster asset and its evidence text together.
+
+## Grounded Oracle interrogation
+
+Oracle still selects a target, but the server builds the displayed question from that target's actual saved answer. The screen shows a verified `statementQuote`. A proposed quote that does not belong to the target falls back to their recorded answer. Optional `evidenceQuote` is used only when it appears verbatim in the evidence belonging to `evidencePlayerId`; otherwise the question asks for supporting evidence without asserting a contradiction. Free-form model accusations are not displayed as interrogation facts. The manual `/oracle` integration also applies these rules. A valid follow-up can question an innocent player; it must not put somebody else's words in their mouth.

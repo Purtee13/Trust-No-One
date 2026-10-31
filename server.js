@@ -1,3 +1,4 @@
+import { groundOracle } from './cloud-deploy/lib/ground-oracle.js';
 import { SECURITY_IMAGE } from './cloud-deploy/lib/evidence-image.js';
 import { assignRoles } from './lib/assign-roles.js';
 import http from 'node:http';
@@ -27,7 +28,8 @@ export function createGameServer({ allowedOrigin = process.env.ALLOWED_ORIGIN ||
       ...(p.response ? { response: p.response } : {}) })),
     question: 'Which pod do you believe is safest? Explain why.',
     oracle: room.oracle ? { suspect: room.oracle.suspect, confidence: room.oracle.confidence,
-      reason: room.oracle.reason, interrogate: room.oracle.interrogate, question: room.oracle.question } : null,
+      reason: room.oracle.reason, interrogate: room.oracle.interrogate, question: room.oracle.question,
+      statementQuote: room.oracle.statementQuote, evidenceQuote: room.oracle.evidenceQuote, evidencePlayerId: room.oracle.evidencePlayerId } : null,
     me: { id: player.id, name: player.name, role: player.role ?? null, evidence: player.evidence ?? null,
       objective: player.role === 'saboteur' ? 'Convince the crew to board Pod B (Borealis). You win if they choose Pod B or fail to identify you. Avoid obvious lies.' : null,
       shadowAdvice: player.role === 'saboteur' ? room.shadowAdvice ?? null : null,
@@ -152,7 +154,7 @@ export function createGameServer({ allowedOrigin = process.env.ALLOWED_ORIGIN ||
         try {
           const output = await generate({ task, context, playerIds: room.players.map(p => p.id) });
           if (room.status !== status) fail(409, 'Phase changed during generation; retry in the current phase');
-          if (task === 'oracle') room.oracle = output;
+          if (task === 'oracle') room.oracle = groundOracle(output, room.players);
           else if (task === 'oracle-vote') room.oracleVote = output;
           else room.shadowAdvice = output.advice;
           publish(room);
@@ -199,8 +201,8 @@ export function createGameServer({ allowedOrigin = process.env.ALLOWED_ORIGIN ||
         if (room.status !== 'discussion' || !room.players.every(p => p.answer)) fail(409, 'Need discussion phase and all answers');
         if (!room.players.some(p => p.id === body.suspect) || !room.players.some(p => p.id === body.interrogate)) fail(400, 'Unknown player');
         if (typeof body.confidence !== 'number' || !Number.isFinite(body.confidence) || body.confidence < 0 || body.confidence > 100) fail(400, 'Confidence must be 0–100');
-        room.oracle = { suspect: body.suspect, interrogate: body.interrogate, confidence: body.confidence,
-          reason: requiredText(body.reason), question: requiredText(body.question) };
+        room.oracle = groundOracle({ suspect: body.suspect, interrogate: body.interrogate, confidence: body.confidence,
+          statementQuote: body.statementQuote, evidencePlayerId: body.evidencePlayerId, evidenceQuote: body.evidenceQuote }, room.players);
       } else if (action === 'oracle-vote') {
         if (room.status !== 'voting') fail(409, 'Not voting phase');
         if (!room.players.some(p => p.id === body.suspect)) fail(400, 'Unknown suspect');

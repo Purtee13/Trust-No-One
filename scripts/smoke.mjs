@@ -21,7 +21,13 @@ const image = rooms.find(r => r.me.evidence.imageUrl).me.evidence.imageUrl;
 assert.match((await fetch(base + image)).headers.get('content-type'), /image/);
 for (const p of players) await call(`${root}/ready`, { ready: true }, p.playerToken);
 await control('advance');
-for (const p of players) await call(`${root}/answer`, { answer: 'Pod D has all systems online. Pod B has hull damage.' }, p.playerToken);
+const statements = [
+  'I recommend D because its navigation report is online.',
+  'I recommend B and question whether the camera damage matters.',
+  'C failed its oxygen test, so I would avoid C.',
+  'A has offline navigation. We should compare the other clues.',
+];
+for (const [i, p] of players.entries()) await call(`${root}/answer`, { answer: statements[i] }, p.playerToken);
 console.log('Four real sessions joined through frontend proxy. Asking Gemma…');
 await control('generate-oracle');
 const saboteur = players.find(p => p.playerId === rooms.find(r => r.me.role === 'saboteur').me.id);
@@ -35,6 +41,12 @@ for (const p of players) {
 await control('advance');
 const state = await call(root, undefined, host.playerToken);
 const target = players.find(p => p.playerId === state.oracle.interrogate);
+const targetAnswer = state.players.find(p => p.id === target.playerId).answer;
+assert.ok(state.oracle.statementQuote && targetAnswer.includes(state.oracle.statementQuote));
+if (state.oracle.evidenceQuote) {
+  const source = rooms.find(r => r.me.id === state.oracle.evidencePlayerId);
+  assert.ok(source.me.evidence.text.includes(state.oracle.evidenceQuote));
+}
 await call(`${root}/response`, { response: 'My evidence says D has power, oxygen and navigation online.' }, target.playerToken);
 await control('advance');
 for (const p of players) await call(`${root}/vote`, { pod: 'D', suspect: state.oracle.suspect }, p.playerToken);

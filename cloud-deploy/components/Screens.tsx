@@ -259,6 +259,7 @@ export function Interrogation({ g }: { g: Game }) {
         <Panel glow="amber">
           <p className="text-amber-400 font-black text-xl animate-pulse">🚨 ORACLE INTERVENTION</p>
           <p className="text-amber-300 text-sm mt-1 tracking-widest">{nameOf(g, o.interrogate).toUpperCase()}</p>
+          {o.statementQuote && <blockquote className="mt-3 border-l-2 border-amber-500 pl-3 text-amber-100"><Label>Their submitted statement</Label><p>“{o.statementQuote}”</p></blockquote>}
           <p className="mt-3 text-amber-100 text-lg"><Typewriter text={o.question} speed={22} /></p>
           {o.reason && <p className="mt-3 text-amber-500/80 text-xs">ORACLE ANALYSIS: {o.reason}</p>}
           <div className="mt-3">

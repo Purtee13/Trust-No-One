@@ -4,7 +4,7 @@ import { hostedGemma } from './cloud-deploy/lib/hosted-gemma.js';
 import { generateGemma as ollama } from './gemma.js';
 import { SECURITY_IMAGE } from './cloud-deploy/lib/evidence-image.js';
 const context = { players: [{ id: 'p1', evidence: { kind: 'image', imageUrl: '/evidence/pod-b.png', text: 'Review the camera image.' } }] };
-const answer = { suspect: 'p1', interrogate: 'p1', confidence: 30, reason: 'Camera evidence.', question: 'Explain the cables.' };
+const answer = { suspect: 'p1', interrogate: 'p1', confidence: 30, reason: 'Camera evidence.', question: 'Explain the cables.', statementQuote: 'Review the camera image.', evidencePlayerId: 'p1', evidenceQuote: 'Review the camera image.' };
 
 test('Google receives the actual PNG bytes with the clue holder for Oracle analysis and voting', async t => {
   const original = globalThis.fetch;

@@ -20,6 +20,9 @@ export type OracleResult = {
   reason: string;
   interrogate: string;   // player id
   question: string;
+  statementQuote?: string;
+  evidenceQuote?: string;
+  evidencePlayerId?: string;
 };
 
 export type GameState = {
