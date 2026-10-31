@@ -1,0 +1,54 @@
+name: Game checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: game-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            cloud-deploy/package-lock.json
+      - name: Install local app dependencies
+        run: npm ci
+      - name: Test multiplayer, privacy, and model configuration
+        run: npm test
+      - name: Check local frontend
+        run: |
+          npm run lint
+          npx tsc --noEmit
+      - name: Install hosted app dependencies
+        working-directory: cloud-deploy
+        run: npm ci
+      - name: Check hosted frontend
+        working-directory: cloud-deploy
+        run: npx tsc --noEmit
+      - name: Build Cloudflare application
+        working-directory: cloud-deploy
+        run: npm run build
+      - name: Retain build for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-build
+          path: cloud-deploy/dist/
+          include-hidden-files: true
+          retention-days: 3

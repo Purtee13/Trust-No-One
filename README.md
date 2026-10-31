@@ -1,5 +1,7 @@
 # Trust No One — integrated game
 
+GitHub Actions runs `.github/workflows/checks.yml` on pushes to `main` and pull requests: tests, lint, TypeScript, and the Cloudflare build. This workflow **does not deploy**. The existing `chatgpt.site` publication is managed through Sites; direct Cloudflare GitHub deployment needs a separately authorized Cloudflare account and deployment target.
+
 The Cloudflare-hosted version lives in [cloud-deploy/README.md](cloud-deploy/README.md). It uses persistent D1 storage and a hosted Gemma API; this root project runs locally with the same hosted Google Gemma adapter by default, plus optional Ollama support. Production publishing is managed through the Sites plugin.
 
 Requires Node 22+. Multiplayer needs no Firebase project or accounts. AI generation uses your Google AI API key by default.
