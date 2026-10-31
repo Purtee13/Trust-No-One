@@ -118,3 +118,6 @@ At launch, all four legitimate clues are shuffled independently of the secret Sa
 ## Private Shadow requests
 
 Only the Saboteur sees **Ask Shadow** in discussion, interrogation, and voting (including after locking their vote). `POST /api/rooms/:code/generate-shadow` requires the Saboteur's **player token**. A host token or any other player's token receives HTTP 403. Advice is included only in the Saboteur's personalized room snapshot; neither Oracle context nor other players receive it. Host controls no longer contain a Shadow button. The trusted server integration may still write agent advice through `/shadow`, but this does not grant read or generation access.
+
+## App link:
+https://trust-no-one-crew-game.fasteave1.chatgpt.site/
