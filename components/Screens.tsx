@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import type { Game } from "@/lib/useGame";
 import type { Pod } from "@/lib/types";
-import { SCENARIO, roleFor } from "@/game/scenario";
+import { SCENARIO } from "@/game/scenario";
 import { Btn, Label, Panel, TextBox, Timer } from "./ui";
 
 // Demo-mode timers (seconds)
@@ -25,9 +25,9 @@ export function Home({ g }: { g: Game }) {
         className="w-full bg-black border border-emerald-700 rounded-lg p-3 text-center tracking-widest" />
       <Btn disabled={!name} onClick={() => g.createRoom(name)}>Create Game</Btn>
       <div className="flex gap-2">
-        <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="ROOM CODE" maxLength={4}
+        <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="ROOM CODE" maxLength={6}
           className="flex-1 bg-black border border-emerald-700 rounded-lg p-3 text-center tracking-[0.4em] uppercase" />
-        <Btn className="!w-28" disabled={!name || code.length < 4} onClick={() => g.joinRoom(code, name)}>Join</Btn>
+        <Btn className="!w-28" disabled={!name || code.trim().length !== 6} onClick={() => g.joinRoom(code, name)}>Join</Btn>
       </div>
     </div>
   );
@@ -49,7 +49,7 @@ export function Lobby({ g }: { g: Game }) {
           <li key={i} className="text-emerald-900 animate-pulse">○ waiting…</li>
         ))}
       </ul>
-      <Btn disabled={state.players.length < 4} onClick={g.startGame}>Launch Mission 🚀</Btn>
+      {g.isHost ? <Btn disabled={state.players.length < 4} onClick={g.startGame}>Launch Mission 🚀</Btn> : <p>Waiting for the host to launch…</p>}
     </Panel>
   );
 }
@@ -57,7 +57,7 @@ export function Lobby({ g }: { g: Game }) {
 /* ---------------- 3. PRIVATE ROLE + EVIDENCE ---------------- */
 export function Evidence({ g }: { g: Game }) {
   const { state, me } = g;
-  const card = roleFor(state.players, state.saboteurId, me);
+  const card = { role: state.privateRole?.replaceAll("-", " ").toUpperCase(), icon: "🧑‍🚀", image: state.evidence?.imageUrl, evidenceText: state.evidence?.text };
   const isSab = me === state.saboteurId;
   return (
     <div className="space-y-4">
@@ -80,7 +80,7 @@ export function Evidence({ g }: { g: Game }) {
         </Panel>
       )}
       <p className="text-center text-xs text-red-400 tracking-widest">⚠ DO NOT SHOW THIS SCREEN</p>
-      <Btn onClick={() => g.setPhase("discussion")}>I&apos;m ready</Btn>
+      <p className="text-center text-sm">Read your evidence. The host will begin discussion when everyone is ready.</p>
     </div>
   );
 }
@@ -237,17 +237,12 @@ export function Result({ g }: { g: Game }) {
   }, [step]);
 
   const { state } = g;
-  const votes = state.players.filter((p) => p.vote).map((p) => p.vote!);
-  const majority = <T extends string>(xs: T[]): T | undefined => {
-    const c: Record<string, number> = {};
-    xs.forEach((x) => (c[x] = (c[x] ?? 0) + 1));
-    return Object.entries(c).sort((a, b) => b[1] - a[1])[0]?.[0] as T | undefined;
-  };
-  const crewPod = majority(votes.map((v) => v.pod));
-  const crewSus = majority(votes.map((v) => v.saboteur));
-  const survived = crewPod === SCENARIO.correctPod;
-  const humansRight = crewSus === state.saboteurId;
-  const oracleRight = state.oracleVote?.saboteur === state.saboteurId;
+  const result = state.result;
+  const crewPod = result?.chosenPods.join(" / ");
+  const crewSus = result?.suspects.length === 1 ? result.suspects[0] : undefined;
+  const survived = result?.survived;
+  const humansRight = result?.humansCorrect;
+  const oracleRight = result?.oracleCorrect;
   const verdict =
     humansRight && !oracleRight ? "🧠 HUMANS BEAT THE AI" :
     !humansRight && oracleRight ? "👁 THE ORACLE WINS" :
@@ -257,14 +252,14 @@ export function Result({ g }: { g: Game }) {
   return (
     <div className="space-y-4 text-center">
       <Panel glow={step >= 1 ? (survived ? "green" : "red") : "green"}>
-        <Label>The crew chose</Label>
+        <Label>{result?.tiedPodVote ? "Crew vote tied — no pod selected" : "The crew chose"}</Label>
         <p className="text-5xl font-black">🚀 POD {crewPod ?? "?"}</p>
         {step >= 1 && (
           <div className="mt-4 space-y-1">
             <Label>System check</Label>
             {survived
               ? <><p>POWER ✓</p><p>OXYGEN ✓</p><p>NAVIGATION ✓</p><p className="text-3xl font-black text-emerald-400 mt-3">YOU SURVIVED</p></>
-              : <p className="text-3xl font-black text-red-500">💥 POD FAILED</p>}
+              : <p className="text-3xl font-black text-red-500">💥 NO SAFE ESCAPE</p>}
           </div>
         )}
       </Panel>
@@ -277,7 +272,7 @@ export function Result({ g }: { g: Game }) {
       {step >= 3 && (
         <Panel>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label>Humans suspected</Label><p className="text-xl font-bold">{nameOf(g, crewSus)} {humansRight ? "✅" : "❌"}</p></div>
+            <div><Label>Humans suspected</Label><p className="text-xl font-bold">{result?.tiedSuspectVote ? "Tie: " + result.suspects.map(id => nameOf(g, id)).join(" / ") : nameOf(g, crewSus)} {humansRight ? "✅" : "❌"}</p></div>
             {step >= 4 && <div><Label>Oracle suspected</Label><p className="text-xl font-bold">{nameOf(g, state.oracleVote?.saboteur)} {oracleRight ? "✅" : "❌"}</p></div>}
           </div>
         </Panel>

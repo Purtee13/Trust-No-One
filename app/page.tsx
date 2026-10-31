@@ -1,5 +1,5 @@
 "use client";
-import { useGame, PHASES } from "@/lib/useGame";
+import { useGame } from "@/lib/useGame";
 import { Home, Lobby, Evidence, Discussion, Interrogation, Voting, Result } from "@/components/Screens";
 
 export default function Page() {
@@ -13,6 +13,9 @@ export default function Page() {
             <span>👁 TRUST NO ONE</span><span>ROOM {g.state.roomCode}</span>
           </div>
         )}
+        {g.error && <div role="alert" className="border border-red-500 text-red-300 p-3 mb-4">{g.error}<button className="ml-3 underline" onClick={g.clearError}>Dismiss</button></div>}
+        {g.busy && <p role="status" className="text-amber-300 mb-4">{g.busy} This may take a minute.</p>}
+        <fieldset disabled={Boolean(g.busy)} className="space-y-4">
         {phase === "home" && <Home g={g} />}
         {phase === "lobby" && <Lobby g={g} />}
         {phase === "evidence" && <Evidence g={g} />}
@@ -20,27 +23,26 @@ export default function Page() {
         {phase === "interrogation" && <Interrogation g={g} />}
         {phase === "voting" && <Voting g={g} />}
         {phase === "result" && <Result g={g} />}
+        </fieldset>
+        {phase !== "home" && <button className="mt-6 text-xs underline text-emerald-700" onClick={g.leave}>Return home (seat stays reserved)</button>}
       </div>
-      <DevBar g={g} />
+      <HostControls g={g} />
     </main>
   );
 }
 
-// Dev toolbar: switch which player you're viewing as + jump phases. Remove before demo.
-function DevBar({ g }: { g: ReturnType<typeof useGame> }) {
-  if (g.state.phase === "home") return null;
-  return (
-    <div className="fixed bottom-0 inset-x-0 bg-zinc-900/95 border-t border-zinc-700 p-2 text-xs text-zinc-300 flex flex-wrap gap-2 justify-center">
-      <span>VIEW AS:</span>
-      {g.state.players.map((p) => (
-        <button key={p.id} onClick={() => g.setMe(p.id)}
-          className={`px-2 rounded ${g.me === p.id ? "bg-emerald-600 text-black" : "bg-zinc-700"}`}>
-          {p.name}{p.id === g.state.saboteurId ? " 😈" : ""}
-        </button>
-      ))}
-      <span className="ml-2">PHASE:</span>
-      <button className="px-2 rounded bg-amber-600 text-black" onClick={g.runOracle}>Run Oracle</button>
-      <button className="px-2 rounded bg-zinc-700" onClick={g.next}>Next ▶ ({PHASES.indexOf(g.state.phase)})</button>
-    </div>
-  );
+function HostControls({ g }: { g: ReturnType<typeof useGame> }) {
+  if (!g.isHost || ["home", "lobby", "result"].includes(g.state.phase)) return null;
+  const phase = g.state.phase;
+  const ready = phase === "evidence" ||
+    (phase === "discussion" && g.state.players.every(p => p.answer)) ||
+    (phase === "interrogation" && Boolean(g.state.interrogationResponse)) ||
+    (phase === "voting" && g.state.players.every(p => p.voted));
+  return <div className="fixed bottom-0 inset-x-0 bg-zinc-900 border-t border-emerald-800 p-3 flex gap-3 justify-center text-sm">
+    <button disabled={!ready || Boolean(g.busy)} className="bg-emerald-500 text-black p-2 rounded disabled:opacity-40"
+      onClick={phase === "discussion" ? g.runOracle : phase === "voting" ? g.reveal : g.next}>
+      {phase === "discussion" ? "Run Oracle + interrogate" : phase === "voting" ? "Oracle vote + reveal" : phase === "evidence" ? "Begin discussion" : "Open voting"}
+    </button>
+    {["discussion", "interrogation", "voting"].includes(phase) && <button disabled={Boolean(g.busy)} className="border border-red-700 text-red-300 p-2 rounded disabled:opacity-40" onClick={g.runShadow}>Update Shadow advice</button>}
+  </div>;
 }

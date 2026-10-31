@@ -39,3 +39,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local backend and Cloudflare deployment state
+node_modules/
+.env
+.DS_Store
+
+.next/
+out/
+*.tsbuildinfo
+
+.env.*
+!.env.example
+cloud-deploy/.sites-runtime/
+cloud-deploy/.vinext/
+cloud-deploy/.wrangler/
+cloud-deploy/dist/

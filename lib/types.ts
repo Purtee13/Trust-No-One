@@ -8,6 +8,8 @@ export type Player = {
   id: string;
   name: string;
   answer?: string;                       // Round 1 answer
+  response?: string;
+  voted?: boolean;
   vote?: { saboteur: string; pod: Pod }; // final vote
 };
 
@@ -28,4 +30,12 @@ export type GameState = {
   shadowTip?: string;                          // from Person 4 (Saboteur only)
   interrogationResponse?: string;
   oracleVote?: { saboteur: string; pod: Pod }; // Oracle's final accusation
+  privateRole?: string;
+  evidence?: { kind: string; text: string; imageUrl?: string };
+  result?: {
+    correctPod: Pod; saboteurId: string; chosenPods: Pod[]; suspects: string[];
+    survived: boolean; humansCorrect: boolean; oracleCorrect: boolean;
+    tiedPodVote: boolean; tiedSuspectVote: boolean;
+    oracleVote: { suspect: string; reason: string };
+  };
 };
