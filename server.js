@@ -2,7 +2,8 @@ import { assignRoles } from './lib/assign-roles.js';
 import http from 'node:http';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
-import { generateGemma } from './gemma.js';
+import { loadEnvFile } from 'node:process';
+import { createGenerator } from './backend-ai.js';
 
 const phases = ['lobby', 'evidence', 'discussion', 'interrogation', 'voting', 'result'];
 const pods = ['A', 'B', 'C', 'D'];
@@ -14,7 +15,7 @@ const requiredText = (value, max = 2000) => {
   return value.trim();
 };
 
-export function createGameServer({ allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:3000', generate = generateGemma } = {}) {
+export function createGameServer({ allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:3000', generate = createGenerator() } = {}) {
   const rooms = new Map();
   const listeners = new Map();
   const playerView = (room, player) => ({
@@ -212,6 +213,7 @@ export function createGameServer({ allowedOrigin = process.env.ALLOWED_ORIGIN ||
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try { loadEnvFile(); } catch (error) { if (error.code !== 'ENOENT') throw error; }
   const port = Number(process.env.PORT || 3001);
-  createGameServer().listen(port, '0.0.0.0', () => console.log(`Trust No One backend listening on ${port}`));
+  createGameServer().listen(port, '0.0.0.0', () => console.log(`Trust No One backend listening on ${port}; Gemma provider: ${process.env.GEMMA_PROVIDER || 'google'}`));
 }

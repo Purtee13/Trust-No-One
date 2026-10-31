@@ -1,8 +1,8 @@
 # Trust No One — integrated game
 
-The Cloudflare-hosted version lives in [cloud-deploy/README.md](cloud-deploy/README.md). It uses persistent D1 storage and a hosted Gemma API; this root project remains the local Node/Ollama setup. Production publishing is managed through the Sites plugin.
+The Cloudflare-hosted version lives in [cloud-deploy/README.md](cloud-deploy/README.md). It uses persistent D1 storage and a hosted Gemma API; this root project runs locally with the same hosted Google Gemma adapter by default, plus optional Ollama support. Production publishing is managed through the Sites plugin.
 
-Requires Node 20+. No dependencies, accounts, Firebase project, or API keys needed.
+Requires Node 22+. Multiplayer needs no Firebase project or accounts. AI generation uses your Google AI API key by default.
 
 ```sh
 npm install
@@ -58,9 +58,11 @@ Confidence uses **0–100**. IDs must be actual player IDs. Context includes all
 
 Failures return JSON `{ "error": "..." }` with 400 for invalid input, 401 for missing credentials, 403 for insufficient permissions, 404 for unknown routes/rooms, and 409 for phase/submission conflicts. Health endpoint: `GET /health`.
 
-## Local Gemma (Ollama)
+## Local backend AI configuration
 
-Your installed model is `gemma4:e4b`. Ensure Ollama is running (open the Ollama application, or run `ollama serve` if no service is already running), then start the backend with `npm run backend`.
+Save `GOOGLE_API_KEY=your_key` in the root `.env`, then run `npm run backend`. The backend loads `.env` automatically and uses the same hosted `gemma-4-26b-a4b-it` model and adapter as production. Restart the backend after changing environment settings. The key stays on the server; never use a `NEXT_PUBLIC_` variable for it.
+
+To use your downloaded model instead, explicitly set `GEMMA_PROVIDER=ollama` in `.env` and run Ollama with `gemma4:e4b`. There is no automatic fallback to Ollama when a Google request fails. See `.env.example`.
 
 The trusted host integration can POST `{}` with the host bearer token to:
 
@@ -72,7 +74,7 @@ The trusted host integration can POST `{}` with the host bearer token to:
 
 All paths start with `/api/rooms/:code`. Calls await generation and return `{ok:true,status}`; updated outputs arrive through room polling/SSE. Show a loading indicator and disable repeated requests. Generation is explicit, not automatically triggered by submissions. Only one generation runs per room; phase advancement waits for it. Failures return HTTP 502 and leave existing outputs intact, allowing retry.
 
-Configuration: `OLLAMA_URL` (default `http://localhost:11434`), `GEMMA_MODEL` (default `gemma4:e4b`), `GEMMA_TIMEOUT_MS` (default `180000`). These are server environment variables. Ollama is called by the backend; phones never need direct access to Ollama. A deployed backend needs network access to the model service; its localhost refers to the deployed machine.
+Configuration: `GEMMA_PROVIDER` (default `google`), `GOOGLE_API_KEY`, and `GOOGLE_GEMMA_MODEL` (default `gemma-4-26b-a4b-it`). For explicit Ollama mode: `OLLAMA_URL` (default `http://localhost:11434`), `GEMMA_MODEL` (default `gemma4:e4b`), `GEMMA_TIMEOUT_MS` (default `180000`). These are server environment variables. Ollama is called by the backend; phones never need direct access to Ollama. A deployed backend needs network access to the model service; its localhost refers to the deployed machine.
 
 Currently Gemma receives **text evidence and conversation**, not image pixels. The SVG evidence is displayed by the frontend but not yet attached to model requests; actual multimodal evidence remains integration work. Oracle never receives the actual Saboteur ID or human votes; Shadow receives the secret identity and target. This local Shadow call is a temporary integration option, not a Maritime agent.
 
@@ -80,7 +82,7 @@ The adapter uses Ollama's [chat API](https://docs.ollama.com/api/chat) and [JSON
 
 ## Test the integrated frontend
 
-1. Ensure Ollama is running with `gemma4:e4b` (`ollama list`).
+1. Save your Google API key in the root `.env` (or explicitly configure Ollama as described above).
 2. Terminal 1: `npm run backend`.
 3. Terminal 2: `npm run dev`.
 4. Open `http://localhost:3000` in four independent tabs (open fresh tabs directly; duplicating a tab can copy its session storage). Enter different names. Create one room and join its six-character code in the other three tabs.
@@ -92,14 +94,14 @@ The adapter uses Ollama's [chat API](https://docs.ollama.com/api/chat) and [JSON
 10. Once all votes are in, host clicks **Oracle vote + reveal**. Gemma chooses its final suspect; all screens move to the animated reveal with server-calculated human and AI results.
 11. Refresh one tab during play: it should resume the same player without taking another seat. Existing rooms are lost if you restart the backend. To start again, use **Return home**, create a fresh room, and join it from the other tabs.
 
-Phone test: put all devices on the same Wi-Fi, find the host laptop's LAN IP, and open `http://LAPTOP_IP:3000` on each device. Keep the host laptop and Ollama running. Requests travel through Next.js to the local backend, so no frontend API URL or phone access to Ollama is needed. If the OS asks, allow local network access. The room creator controls phases; their host token is kept only in their tab's session storage. This is a trusted demo-host setup.
+Phone test: put all devices on the same Wi-Fi, find the host laptop's LAN IP, and open `http://LAPTOP_IP:3000` on each device. Keep the host laptop and both app servers running. Ollama is only needed when explicitly selected. Requests travel through Next.js to the local backend, so no frontend API URL or phone access to Ollama is needed. If the OS asks, allow local network access. The room creator controls phases; their host token is kept only in their tab's session storage. This is a trusted demo-host setup.
 
 Verification commands:
 
 - `npm test`: backend flow and privacy/authorization checks using a stubbed model.
 - `npm run lint` and `npx tsc --noEmit`: frontend static checks.
 - `npm run build`: production build. Then `npm start` runs the production frontend; keep `npm run backend` running separately.
-- `npm run test:live`: with both servers and Ollama running, creates four sessions through the frontend proxy and plays every phase with real Gemma calls. Consumes a room and may take a few minutes. Set `TEST_URL` to override the frontend URL.
+- `npm run test:live`: with both servers running and your selected AI provider configured, creates four sessions through the frontend proxy and plays every phase with real Gemma calls. Consumes a room and may take a few minutes. Set `TEST_URL` to override the frontend URL.
 
 `BACKEND_URL` configures the Next.js proxy destination (default `http://127.0.0.1:3001`). `npm start` now starts the production **frontend**, not the backend.
 
